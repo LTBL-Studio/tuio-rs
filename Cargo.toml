@@ -2,6 +2,7 @@
 name = "tuio-rs"
 version = "0.1.0"
 edition = "2021"
+description = "A TUIO 1.1 implementation in Rust"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -11,3 +12,53 @@ indexmap = "1.9.2"
 local-ip-address = "0.5.1"
 ringbuffer = "0.12.0"
 rosc = "0.9.1"
+
+[dev-dependencies]
+dioxus = "0.3.1"
+dioxus-desktop = "0.3.0"
+
+[dev-dependencies.bevy]
+version = "0.9"
+# Disable the default features if there are any that you do not want
+default-features = false
+features = [
+  # These are the default features:
+  # (re-enable whichever you like)
+
+  # Bevy functionality:
+  "bevy_asset",         # Assets management
+  "bevy_scene",         # Scenes management
+  "bevy_gilrs",         # Gamepad input support
+  "bevy_audio",         # Builtin audio
+  "bevy_winit",         # Window management
+  "animation",          # Animation support
+  "x11",                # Linux: Support X11 windowing system
+  "filesystem_watcher", # Asset hot-reloading
+  "render",             # Graphics Rendering
+
+  ## "render" actually just includes:
+  ## (feel free to use just a subset of these, instead of "render")
+  "bevy_render",        # Rendering framework core
+  "bevy_core_pipeline", # Common rendering abstractions
+  "bevy_sprite",        # 2D (sprites) rendering
+  "bevy_text",          # Text/font rendering
+  "bevy_ui",            # UI toolkit
+
+  # File formats:
+  "png",
+
+  # These are other features that may be of interest:
+  # (add any of these that you need)
+
+  # Bevy functionality:
+  "wayland",              # Linux: Support Wayland windowing system
+  "subpixel_glyph_atlas", # Subpixel antialiasing for text/fonts
+
+  # File formats:
+  "ktx2", # preferred format for GPU textures
+  "jpeg",
+  "bmp",
+  "tga",
+  "basis-universal",
+  "zstd", # needed if using zstd in KTX2 files
+]
