@@ -1,4 +1,4 @@
-use std::{time::{Instant, Duration}, sync::{RwLock, Arc, Mutex}, collections::HashSet, cell::{RefCell, Cell}, thread};
+use std::{cell::{Cell, RefCell}, collections::HashSet, net::SocketAddr, sync::{Arc, Mutex, RwLock}, thread, time::{Duration, Instant}};
 
 use indexmap::IndexMap;
 use ringbuffer::{ConstGenericRingBuffer, RingBufferWrite, RingBufferRead};
@@ -97,6 +97,19 @@ impl Client {
         Ok(Self {
             instant: Instant::now(),
             osc_receivers: vec![Arc::new(UdpReceiver::from_port(port)?)],
+            current_frame: (-1).into(),
+            current_time: Cell::new(Duration::default()),
+            source_list: RefCell::new(IndexMap::new()),
+            local_receiver: true,
+            listen: Arc::new(RwLock::new(false)),
+            packet_buffer: Default::default()
+        })
+    }
+
+    pub fn from_addr(addr: SocketAddr) -> Result<Self, std::io::Error> {
+        Ok(Self {
+            instant: Instant::now(),
+            osc_receivers: vec![Arc::new(UdpReceiver::from_addr(addr)?)],
             current_frame: (-1).into(),
             current_time: Cell::new(Duration::default()),
             source_list: RefCell::new(IndexMap::new()),

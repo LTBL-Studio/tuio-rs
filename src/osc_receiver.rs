@@ -43,6 +43,13 @@ impl UdpReceiver {
             ))?)
         })
     }
+
+    /// Creates an [UdpReceiver] bound to the provided addr:port
+    pub fn from_addr(socket_addr: SocketAddr) -> Result<Self, std::io::Error> {
+        Ok(Self {
+            socket: Arc::new(UdpSocket::bind(socket_addr)?)
+        })
+    }
 }
 
 pub type RoscReceiver = dyn OscReceiver<OscPacket, OscReceiverError> + Send + Sync;
