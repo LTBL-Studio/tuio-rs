@@ -285,7 +285,9 @@ fn try_unwrap_blob_args(args: &[OscType]) -> Result<Blob, u8> {
 impl DecodeOsc<OscBundle> for OscDecoder {
     fn decode_bundle(bundle: OscBundle) -> Result<TuioBundle, TuioError> {
         let mut decoded_bundle = TuioBundle::default();
-        
+
+        let mut matched_arms = 0u8;
+
         for packet in &bundle.content {
             if let OscPacket::Message(message) = packet {
                 match message.args.first() {
@@ -300,9 +302,11 @@ impl DecodeOsc<OscBundle> for OscDecoder {
                                 };
 
                                 decoded_bundle.source = try_unwrap_source_name(message)?;
+                                matched_arms |= 0b1 << 0;
                             },
                             "alive" => {
                                 decoded_bundle.alive = message.args.iter().skip(1).filter_map(|e| e.clone().int()).collect();
+                                matched_arms |= 0b1 << 1;
                             },
                             "set" => {
                                 match decoded_bundle.tuio_type {
@@ -351,6 +355,7 @@ impl DecodeOsc<OscBundle> for OscDecoder {
                                     },
                                     TuioBundleType::Unknown => return Err(TuioError::IncompleteBundle(bundle)),
                                 }
+                                matched_arms |= 0b1 << 2;
                             },
                             "fseq" => {
                                 if let Some(OscType::Int(fseq)) = message.args.get(1) {
@@ -359,6 +364,7 @@ impl DecodeOsc<OscBundle> for OscDecoder {
                                 else {
                                     return Err(TuioError::MissingArguments(message.clone()))
                                 }
+                                matched_arms |= 0b1 << 3;
                             },
                             _ => return Err(TuioError::UnknownMessageType(message.clone()))
                         }
@@ -367,6 +373,17 @@ impl DecodeOsc<OscBundle> for OscDecoder {
                     _ => return Err(TuioError::UnknownMessageType(message.clone()))
                 }
             };
+        }
+
+        // We want to have at least an "alive" and "fseq" message :
+        // https://www.tuio.org/?tuio11#:~:text=A%20minimal%20TUIO%20bundle%20needs%20to%20contain%20at%20least%20the%20compulsory%20ALIVE%20and%20FSEQ%20messages%2E
+        let valid_bundle_mask = 0b1010;
+
+        let _valid = matched_arms & valid_bundle_mask == valid_bundle_mask;
+
+        #[cfg(feature = "validate")]
+        if !_valid {
+            return Err(TuioError::IncompleteBundle(bundle));
         }
 
         Ok(decoded_bundle)
